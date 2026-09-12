@@ -11,9 +11,15 @@
    EDIT THIS SECTION TO PERSONALISE THE GIFT
    ============================================================ */
 const CONFIG = {
-  friendName: "Friend",
-  fromName:   "Me",
-  message:    "Another year of you being wonderful. I hope this one is full of good surprises, late-night talks, and everything you've been wishing for.",
+  // The big headline on the opening screen, and the browser tab name.
+  // Changing this one line updates both.
+  title:      "Banner: Coloumbinaverse",
+  // The line under the headline. Leave "" to use the default sentence.
+  subtitle:   "A wish banner for Sam's birthday. Every wish holds a prize.",
+
+  friendName: "Sam",
+  fromName:   "Tharak",
+  message:    "Happy Birthday Sam, May the gacha gods smile upon you, May you be succsesfull in whatever you do in the future.",
 
   // Optional. Put an image file in the SAME FOLDER as this HTML file and write
   // its filename here, e.g. "art.png". Leave "" to keep the glowing orb.
@@ -21,41 +27,59 @@ const CONFIG = {
   heroImage:  "",
   heroAlt:    "",   // short description of the image, for screen readers
 
-  startingGlow:   200,   // glow they start with (10 glow = 1 lantern)
-                         // 200 covers 20 lanterns, so the birthday card is
+  startingGlow:   3200,  // glow they start with (160 = 1 lantern)
+                         // 3200 covers 20 lanterns, so the birthday card is
                          // guaranteed in the very first session
-  pullCost:       10,
+  starValue:      160,   // a blue star gem is worth exactly one lantern
+  goldStarValue:  1600,  // a gold star is worth a full ten-pull
+  goldStarChance: .035,  // how often a gold star falls (3.5% — properly rare)
+  shadowPenalty:  160,   // glow lost to a shadow drop
+  pullCost:       160,
   pityAt:         20,    // legendary is guaranteed by this many lanterns
   legendaryRate:  0.04,
   rareRate:       0.22,
   candles:        5,
 
+  // The joke prizes. Every one of these is delivered with a completely
+  // straight face. Swap in your own lines freely — "name" is the punchline,
+  // "desc" is the deadpan follow-up.
   commons: [
-    { icon: "🪨", name: "A suspiciously round pebble", desc: "Found on the path. Probably not magic. Probably." },
-    { icon: "🍰", name: "Crumbs from last year's cake", desc: "Vintage. Aged to perfection." },
-    { icon: "🍃", name: "A leaf shaped like a heart", desc: "If you squint. A lot." },
-    { icon: "🧦", name: "One sock", desc: "The other one is out there somewhere, living its best life." },
-    { icon: "🕯️", name: "A slightly used candle", desc: "Still has one wish left in it." },
-    { icon: "🪲", name: "A firefly that refuses to glow", desc: "It's shy. Give it time." }
+    { icon: "🃏", name: "Why did the card lose the duel? It folded under pressure.",
+      desc: "This is a joke. You may laugh now." },
+    { icon: "🏜️", name: "I told the desert a secret. It kept it very dry.",
+      desc: "Humour is a discipline, like any other." },
+    { icon: "⚖️", name: "The scales refused to testify. They were biased.",
+      desc: "I workshopped this one. It did not help." },
+    { icon: "🌵", name: "Never argue with a cactus. It always has a point.",
+      desc: "You are permitted a single groan." },
+    { icon: "📜", name: "The scroll had nothing to say. It was blank-faced.",
+      desc: "Timing is everything. Mine is impeccable." },
+    { icon: "🕯️", name: "Why was the candle promoted? It was outstanding in its wick.",
+      desc: "No further questions." }
   ],
   rares: [
-    { icon: "🎟️", name: "Coupon: snack of your choice", desc: "Redeem with the person who made this. No expiry date." },
-    { icon: "🎬", name: "Coupon: movie night, your pick", desc: "Even the weird one. Especially the weird one." },
-    { icon: "📞", name: "Coupon: one late-night call", desc: "Nobody is allowed to hang up first." },
-    { icon: "🏅", name: "Certificate of being excellent", desc: "Officially recognised by the committee of me." }
+    { icon: "🎴", name: "I lost a duel to a mirror. Turns out it reflected on my strategy.",
+      desc: "My finest work. Nobody has ever laughed at it." },
+    { icon: "🌙", name: "The moon skipped the party. It was going through a phase.",
+      desc: "Delivered flawlessly. Received poorly." },
+    { icon: "⚡", name: "The storm apologised. It was sorry for the thunder it caused.",
+      desc: "I have been told to stop. I will not." },
+    { icon: "🎂", name: "Why was the birthday cake so calm? It had been through the layers.",
+      desc: "Happy birthday. That was the setup. This was the joke." }
   ],
+
   // SIX LEGENDARY CHARACTERS. Put each image file in the same folder as this
   // HTML file and write its filename below. Wide images (roughly 2:1, like
   // 1080x546) fit the card best; PNGs with a transparent background look
   // nicest. Leave "image" as "" and the slot falls back to the star symbol.
   // You can rename these freely — the names and lines are all yours.
   legendaries: [
-    { image: "bina1", name: "JoJobina",   desc: "Write a line about them here." },
-    { image: "bina2", name: "Character Two",   desc: "Write a line about them here." },
-    { image: "bina3", name: "Character Three", desc: "Write a line about them here." },
-    { image: "bina4", name: "Character Four",  desc: "Write a line about them here." },
-    { image: "bina5", name: "Character Five",  desc: "Write a line about them here." },
-    { image: "bina6", name: "Character Six",   desc: "Write a line about them here." }
+    { image: "bina1.png", name: "Joloumbina Jostar",   desc: "She floats three inches off the ground at all times, and nobody has worked up the courage to ask whether that's her Stand or just a her thing" },
+    { image: "bina2.png", name: "MaoMaobina",   desc: "Drinks Poison cuz it helps her sleep better" },
+    { image: "bina3.png", name: "Bumbina", desc: "Sandrone's worst Nightmare" },
+    { image: "bina4.png", name: "Sousou no Coloumbina",  desc: "She and Frieren once agreed to meet up soon.It has been two hundred years. Neither of them considers this a problem, and Fern has stopped bringing it up." },
+    { image: "bina5.png", name: "Gojobina",  desc: "Grade: pending. Her file has been pending for eleven years because every assessor assigned to her has come back smiling, gone home, and put in for early retirement. Gojo keeps saying he'll handle it next week." },
+    { image: "bina6.png", name: "Tony Coloumbina",   desc: "Her wanted poster has no crimes listed, no bounty amount, and no photograph, just a note from an unnamed Vice Admiral that reads do not engage, do not greet, do not compliment her singing." }
   ],
 
   bonusWishes: [
@@ -71,6 +95,11 @@ const CONFIG = {
   :root{
     --glow:#8fe3ff; --peach:#a6b8ff; --mist:#b9c9f2; --paper:#eef6ff; --ink:#12203f;
     --common:#7fc8d8; --rare:#a6a6ff; --legend:#ffce54;
+
+    /* ---- CHARACTER REVEAL SIZE: change these two ---- */
+    --art-width: 1100px;   /* how wide the art can get on a big screen */
+    --art-height: 72dvh;   /* how much of the screen height it may fill */
+    --art-blur: 16px;      /* how blurred the background behind it is */
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
@@ -82,6 +111,7 @@ const CONFIG = {
   canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
   .screen{position:fixed;inset:0;display:grid;place-items:center;padding:64px 18px 24px}
   .overlay{z-index:5;background:rgba(5,11,34,.8);padding:24px 18px}
+  #artView{z-index:7}
   .hidden{display:none !important}
   button{font:inherit;cursor:pointer;color:inherit}
   button:focus-visible{outline:3px solid var(--peach);outline-offset:3px}
@@ -153,30 +183,49 @@ const CONFIG = {
   .launchOut{animation:launchOut .9s ease forwards}
   @keyframes launchOut{to{opacity:0;transform:scale(1.35)}}
 
-  /* how long until the next card turns itself over */
-  .meter{width:min(300px,86vw);height:4px;border-radius:99px;background:rgba(180,215,255,.2);overflow:hidden}
-  .meter i{display:block;height:100%;width:100%;background:var(--rc);transform-origin:left;
-    animation:drain 3.6s linear forwards}
-  @keyframes drain{to{transform:scaleX(0)}}
+
   .skip{position:absolute;top:14px;right:14px;z-index:2}
   .single{display:flex;flex-direction:column;align-items:center;gap:18px}
-  .item-card{width:min(300px,86vw);padding:30px 22px 24px;border-radius:24px;background:var(--paper);color:var(--ink);text-align:center;border:4px solid var(--rc);box-shadow:0 0 50px 8px var(--rc)}
+  .item-card{width:min(330px,88vw);padding:28px 22px 24px;border-radius:24px;background:var(--paper);color:var(--ink);text-align:center;border:4px solid var(--rc);box-shadow:0 0 50px 8px var(--rc)}
   .item-card.pop{animation:pop .5s cubic-bezier(.2,.9,.3,1.3)}
   .item-card.r3.pop{animation:pop .5s cubic-bezier(.2,.9,.3,1.3),shine 1.6s ease-in-out .5s infinite alternate}
   @keyframes pop{from{opacity:0;transform:scale(.6) rotate(-6deg)}}
   @keyframes shine{to{box-shadow:0 0 80px 22px var(--rc)}}
   .emoji{font-size:4rem;line-height:1.1}
-  #rImg{display:block;width:calc(100% + 44px);margin:-30px -22px 4px;border-radius:20px 20px 0 0;
-    object-fit:cover;background:rgba(18,32,63,.06)}
-  .item-card.r3 #rImg{box-shadow:0 2px 18px rgba(255,206,84,.45)}
   .tile .timg{display:block;width:100%;height:52px;object-fit:cover;border-radius:9px;margin-bottom:5px}
   .row .rimg{width:52px;height:34px;object-fit:cover;border-radius:7px}
   .row .rimg.locked-art{filter:brightness(0) opacity(.25)}
   .rarity{display:inline-block;background:var(--rc);border-radius:999px;padding:.15em .9em;font-size:.9rem;font-weight:700;margin:.7em 0 .1em}
-  .item-card h3{font-family:"Kalam",cursive;font-size:1.5rem;line-height:1.2;margin:.3em 0}
+  .item-card h3{font-family:"Kalam",cursive;font-size:1.35rem;line-height:1.3;margin:.35em 0;
+    text-wrap:balance}
   .item-card p{margin:0;line-height:1.45}
   .extra{font-weight:700;margin-top:.8em !important;color:#3d5bbf}
-  .continue{background:rgba(180,215,255,.16);border:0;border-radius:999px;padding:.55em 1.4em;font-size:1rem}
+  .continue{background:var(--glow);color:var(--ink);font-weight:700;border:0;border-radius:999px;
+    padding:.62em 1.6em;font-size:1.05rem;box-shadow:0 0 24px rgba(143,227,255,.3)}
+  /* character reveal: the art itself is the whole card */
+  .artReveal{position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:12px;padding:16px;text-align:center}
+  /* a still frame of the grove, blurred, sitting behind the character */
+  .artBg{position:absolute;inset:-40px;z-index:-1;background-size:cover;background-position:center;
+    filter:blur(var(--art-blur)) brightness(.5) saturate(1.2);
+    animation:bgIn .9s ease}
+  .artBg::after{content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 50% 45%,rgba(255,206,84,.14),rgba(5,11,34,.55) 70%)}
+  @keyframes bgIn{from{opacity:0}}
+  #aImg{width:min(96vw,var(--art-width));max-height:var(--art-height);object-fit:contain;
+    filter:drop-shadow(0 6px 46px rgba(255,206,84,.5)) drop-shadow(0 0 90px rgba(255,206,84,.25));
+    animation:artIn 1.1s cubic-bezier(.2,.9,.3,1.15)}
+  @keyframes artIn{from{opacity:0;transform:scale(.82)}}
+  .artText{max-width:32rem;animation:fadein 1s ease .5s backwards}
+  .artRarity{display:inline-block;background:var(--legend);color:#3d2a05;border-radius:999px;
+    padding:.12em .95em;font-size:.85rem;font-weight:700;letter-spacing:.04em}
+  .artText h3{font-family:"Kalam",cursive;font-size:clamp(1.6rem,5vw,2.3rem);line-height:1.15;
+    margin:.35em 0 .25em;color:var(--legend);text-shadow:0 0 26px rgba(255,206,84,.5)}
+  .artText p{margin:0;font-size:1.05rem;line-height:1.5;color:var(--paper)}
+  .artExtra{margin-top:.5em !important;font-weight:700;color:var(--legend)}
+  @media (max-height:620px){ #aImg{max-height:52dvh} .artText p{font-size:.95rem} }
+  @media (prefers-reduced-motion:reduce){ #aImg,.artText,.artBg{animation:none} }
+
   .summary{width:min(560px,100%);max-height:90dvh;overflow:auto;text-align:center;padding:4px}
   .summary h2{font-size:1.8rem;color:var(--glow);margin:.2em 0 .7em}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;margin-bottom:1.2em}
@@ -187,6 +236,11 @@ const CONFIG = {
   .tile.r3 .tr{color:#8a6416;filter:none}
   .tile .tn{display:inline-block;margin-top:4px;background:var(--rc);color:#12203f;
     border-radius:99px;padding:.05em .6em;font-size:.66rem;font-weight:700}
+  /* punchlines are long, so trim them in the grid; the full line was already
+     shown on the card when the prize was revealed */
+  .tile .tname{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;
+    overflow:hidden;line-height:1.25;word-break:break-word}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))}
   .tile{animation:tileIn .4s ease backwards}
   @keyframes tileIn{from{opacity:0;transform:translateY(10px) scale(.9)}}
   .tile.r3{box-shadow:0 0 22px 4px var(--rc)}
@@ -203,8 +257,10 @@ const CONFIG = {
   .col-h{margin:1.1em 0 .4em;font-size:1rem;display:flex;align-items:center;gap:.5em}
   .col-h::before{content:"";width:12px;height:12px;border-radius:50%;background:var(--rc)}
   .row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(18,32,63,.1)}
+  .row.clickable{cursor:pointer;border-radius:10px;padding:8px 6px;transition:background .15s}
+  .row.clickable:hover{background:rgba(255,206,84,.16)}
   .row .ri{font-size:1.6rem;width:2rem;text-align:center}
-  .row .rn{flex:1;line-height:1.3}
+  .row .rn{flex:1;line-height:1.35;font-size:.92rem}
   .row.locked{opacity:.45}
   .row .open{background:var(--glow);border:0;border-radius:999px;padding:.3em .9em;font-weight:700}
 
@@ -231,7 +287,6 @@ const CONFIG = {
   @media (prefers-reduced-motion:reduce){
     #bigLantern,.flame,.item-card.pop,.item-card.r3.pop,.card{animation:none}
     .orb{animation:orbIn .01s forwards}
-    .meter i{animation:none}
     .orb.r3::after{animation:none}
   }
 </style>
@@ -249,7 +304,7 @@ const CONFIG = {
 
 <main id="shrine" class="screen">
   <div class="shrine">
-    <h1>Lantern of wishes</h1>
+    <h1 id="bigTitle"></h1>
     <p class="sub" id="shrineSub"></p>
     <div class="heroWrap"><svg id="bigLantern" viewBox="0 0 220 220" aria-hidden="true">
       <defs>
@@ -291,15 +346,24 @@ const CONFIG = {
   <div id="launch" class="launch"></div>
   <div id="single" class="single hidden">
     <div id="itemCard" class="item-card">
-      <img id="rImg" class="hidden" alt="">
       <div class="emoji" id="rIcon"></div>
       <div class="rarity" id="rRarity"></div>
       <h3 id="rName"></h3>
       <p id="rDesc"></p>
       <p class="extra" id="rExtra"></p>
     </div>
-    <div class="meter" id="rMeter"><i></i></div>
     <button class="continue" id="rNext">Continue</button>
+  </div>
+  <div id="art" class="artReveal hidden">
+    <div id="artBg" class="artBg"></div>
+    <img id="aImg" alt="">
+    <div class="artText">
+      <span class="artRarity">Legendary</span>
+      <h3 id="aName"></h3>
+      <p id="aDesc"></p>
+      <p class="artExtra" id="aExtra"></p>
+    </div>
+    <button class="btn gold" id="aNext">Next</button>
   </div>
   <div id="summary" class="summary hidden">
     <h2>Your haul</h2>
@@ -316,6 +380,19 @@ const CONFIG = {
   <div class="panel">
     <div class="panel-head"><h2>Collection</h2><button id="colClose" class="chip">Close</button></div>
     <div id="colList"></div>
+  </div>
+</section>
+
+<section id="artView" class="screen overlay hidden" aria-label="Character art">
+  <div class="artReveal">
+    <div id="vBg" class="artBg"></div>
+    <img id="vImg" alt="">
+    <div class="artText">
+      <span class="artRarity">Legendary</span>
+      <h3 id="vName"></h3>
+      <p id="vDesc"></p>
+    </div>
+    <button class="btn gold" id="vClose">Close</button>
   </div>
 </section>
 
@@ -350,7 +427,10 @@ const LEGENDARIES = [LEG, ...CHARS];
 let glow = CONFIG.startingGlow, pity = 0, owned = {};
 let state = "shrine";
 
-$("shrineSub").textContent = `A wish lantern for ${CONFIG.friendName}'s birthday. Every lantern holds a prize, and one of them is very special.`;
+$("bigTitle").textContent = CONFIG.title;
+document.title = CONFIG.title;
+$("shrineSub").textContent = CONFIG.subtitle
+  || `A wish lantern for ${CONFIG.friendName}'s birthday. Every lantern holds a prize, and one of them is very special.`;
 if (CONFIG.heroImage){
   const img = new Image();
   img.id = "heroImg";
@@ -432,7 +512,8 @@ function pull(n){
     let extra = "";
     if (count === 1) extra = item.rarity === 3 ? "New! Open it when the lanterns are done." : "New!";
     else if (item.rarity === 3) extra = "Already yours. Bonus wish: " + pick(CONFIG.bonusWishes);
-    else { const back = item.rarity === 2 ? 3 : 1; glow += back; extra = `Duplicate, turned back into ${back} glow`; }
+    else { const back = item.rarity === 2 ? Math.round(CONFIG.pullCost * .3) : Math.round(CONFIG.pullCost * .1);
+           glow += back; extra = `Heard it before. ${back} glow returned.`; }
     return {item, extra};
   });
   updateTop();
@@ -442,16 +523,18 @@ $("pull1").onclick = () => pull(1);
 $("pull10").onclick = () => pull(10);
 
 /* ---------- reveal ---------- */
-const rv = {res: [], idx: -1, phase: "", timer: 0, exit: 0, fallback: 0, guard: 0};
-const CARD_HOLD = 4900;   // how long each card stays up before turning itself over
+const rv = {res: [], idx: -1, phase: "", timer: 0, exit: 0, fallback: 0, guard: 0, artWaiting: false, snapshot: null};
 
 function startReveal(res){
   clearTimeout(rv.timer); clearTimeout(rv.exit); clearTimeout(rv.fallback);
+  // grab a still of the grove now, while it's still being drawn; the canvas
+  // idles during the overlay, so this is what the blurred backdrop uses
+  try { rv.snapshot = cvs.toDataURL("image/jpeg", .7); } catch(e){ rv.snapshot = null; }
   state = "reveal";
   Object.assign(rv, {res, idx: -1, phase: "launch", guard: 0});
   const best = Math.max(...res.map(r => r.item.rarity));
   $("reveal").className = "screen overlay best" + best;
-  show("launch"); show("single", false); show("summary", false); show("skip");
+  show("launch"); show("single", false); show("art", false); show("summary", false); show("skip");
 
   // pacing, all in seconds — raise these two to slow the reveal further
   const STEP = res.length > 1 ? .5 : 0;    // gap between lanterns lighting up
@@ -520,28 +603,47 @@ function startReveal(res){
 
 function nextCard(){
   clearTimeout(rv.timer); clearTimeout(rv.exit); clearTimeout(rv.fallback);
+  rv.artWaiting = false;
   rv.idx++;
   if (rv.idx >= rv.res.length){ finishReveal(); return; }
   rv.phase = "single";
-  rv.guard = Date.now() + 900;
-  show("launch", false); show("single");
+  rv.guard = Date.now() + 450;
   const {item, extra} = rv.res[rv.idx];
+
+  // A character with art gets the full screen: no card, no countdown, and it
+  // stays up until they choose to move on.
+  if (item.image){
+    show("launch", false); show("single", false); show("art");
+    $("artBg").style.backgroundImage = rv.snapshot ? `url(${rv.snapshot})` : "none";
+    const aImg = $("aImg");
+    aImg.src = item.image;
+    aImg.alt = item.name;
+    aImg.onerror = () => {            // missing file: fall back to the card
+      show("art", false);
+      rv.artWaiting = false;
+      showAsCard(item, extra);
+    };
+    $("aName").textContent = item.name;
+    $("aDesc").textContent = item.desc;
+    $("aExtra").textContent = extra;
+    $("aNext").textContent = rv.res.length > 1 && rv.idx < rv.res.length - 1
+      ? `Next (${rv.idx + 1} of ${rv.res.length})` : "Continue";
+    [0, 2, 3, 5].forEach((n, i) => setTimeout(() => tone(notes[n] * 1.5, .7), i * 150));
+    burst(W / 2, H / 2, "255,206,84", 60, true);
+    rv.artWaiting = true;             // nothing advances this but the person
+    return;
+  }
+  show("launch", false); show("art", false); show("single");
+  showAsCard(item, extra);
+}
+
+function showAsCard(item, extra){
+  show("single");
   const card = $("itemCard");
   card.className = "item-card r" + item.rarity;
   void card.offsetWidth;
   card.classList.add("pop");
-  const rImg = $("rImg");
-  if (item.image){
-    rImg.src = item.image;
-    rImg.alt = item.name;
-    rImg.classList.remove("hidden");
-    $("rIcon").classList.add("hidden");
-    // if the file is missing, quietly fall back to the symbol
-    rImg.onerror = () => { rImg.classList.add("hidden"); $("rIcon").classList.remove("hidden"); };
-  } else {
-    rImg.classList.add("hidden");
-    $("rIcon").classList.remove("hidden");
-  }
+  $("rIcon").classList.remove("hidden");
   $("rIcon").textContent = item.icon;
   $("rRarity").textContent = RARITY[item.rarity];
   $("rName").textContent = item.name;
@@ -549,12 +651,6 @@ function nextCard(){
   $("rExtra").textContent = extra;
   $("rNext").textContent = rv.res.length > 1 ? `Next (${rv.idx + 1} of ${rv.res.length})` : "Continue";
 
-  // restart the countdown bar, tinted to this card's rarity
-  const hold = item.rarity === 3 ? CARD_HOLD + 3200 : CARD_HOLD;
-  const meter = $("rMeter");
-  meter.className = "meter r" + item.rarity;
-  meter.innerHTML = "<i></i>";
-  meter.firstChild.style.animationDuration = (hold / 1000) + "s";
 
   if (item.rarity === 1) tone(notes[2], .25);
   if (item.rarity === 2){ tone(notes[3], .3); setTimeout(() => tone(notes[5], .4), 130); }
@@ -562,11 +658,13 @@ function nextCard(){
     [0, 2, 3, 5].forEach((n, i) => setTimeout(() => tone(notes[n] * 1.5, .6), i * 130));
     burst(W / 2, H / 2, "255,206,84", 50, true);
   }
-  rv.timer = setTimeout(nextCard, reduced ? 1200 : hold);
+  // nothing auto-advances: the card waits for Next (or a tap) indefinitely
 }
 
 function finishReveal(){
   clearTimeout(rv.timer); clearTimeout(rv.exit); clearTimeout(rv.fallback);
+  rv.artWaiting = false;
+  show("art", false);
   const hasLeg = rv.res.some(r => r.item.rarity === 3);
   if (rv.res.length === 1 && !hasLeg){ closeReveal(); return; }
   rv.phase = "summary";
@@ -586,7 +684,8 @@ function finishReveal(){
       i = document.createElement("span"); i.className = "ti"; i.textContent = item.icon;
     }
     const lab = document.createElement("span"); lab.className = "tr"; lab.textContent = RARITY[item.rarity];
-    t.append(i, lab, document.createTextNode(item.name));
+    const nm = document.createElement("span"); nm.className = "tname"; nm.textContent = item.name;
+    t.append(i, lab, nm);
     if (extra.startsWith("New")){
       const nw = document.createElement("span"); nw.className = "tn"; nw.textContent = "New";
       t.appendChild(nw);
@@ -617,7 +716,10 @@ addEventListener("keydown", e => {
       && Date.now() > rv.guard){
     e.preventDefault(); nextCard();
   }
-  if (e.key === "Escape" && !$("collection").classList.contains("hidden")) closeCollection();
+  if (e.key === "Escape"){
+    if (artViewOpen) closeArtView();
+    else if (!$("collection").classList.contains("hidden")) closeCollection();
+  }
 });
 
 /* ---------- collection ---------- */
@@ -653,6 +755,12 @@ function openCollection(){
         const b = document.createElement("button"); b.className = "open"; b.textContent = "Open";
         b.onclick = () => { closeCollection(); showCard(); };
         row.appendChild(b);
+      } else if (have && it.rarity === 3 && it.image){
+        // the whole row opens the art, with a button for keyboard and clarity
+        const b = document.createElement("button"); b.className = "open"; b.textContent = "View";
+        row.classList.add("clickable");
+        row.onclick = () => openArtView(it);
+        row.appendChild(b);
       }
       list.appendChild(row);
     });
@@ -663,6 +771,31 @@ function openCollection(){
 function closeCollection(){ show("collection", false); }
 $("colBtn").onclick = openCollection;
 $("colClose").onclick = closeCollection;
+
+/* ---------- full-screen character art ---------- */
+let artViewOpen = false;
+function openArtView(item){
+  // snapshot the grove first: the canvas idles once the viewer is up
+  try { $("vBg").style.backgroundImage = `url(${cvs.toDataURL("image/jpeg", .7)})`; }
+  catch(e){ $("vBg").style.backgroundImage = "none"; }
+  const img = $("vImg");
+  img.src = item.image;
+  img.alt = item.name;
+  $("vName").textContent = item.name;
+  $("vDesc").textContent = item.desc;
+  artViewOpen = true;
+  state = "artview";
+  show("artView");
+  $("vClose").focus({preventScroll: true});
+  tone(notes[3] * 1.5, .5, "sine", .05);
+}
+function closeArtView(){
+  artViewOpen = false;
+  show("artView", false);
+  state = "shrine";              // the collection panel is still open behind it
+}
+$("vClose").onclick = closeArtView;
+$("artView").addEventListener("click", e => { if (e.target.id === "artView") closeArtView(); });
 
 /* ---------- birthday card ---------- */
 function showCard(){
@@ -853,10 +986,10 @@ function update(dt){
       flyTimer -= dt;
       if (flyTimer <= 0){
         const bx = 30 + Math.random() * (W - 60);
-        items.push({kind: "fly", golden: Math.random() < .12, baseX: bx, x: bx, y: -20,
+        items.push({kind: "fly", golden: Math.random() < CONFIG.goldStarChance, baseX: bx, x: bx, y: -20,
           vy: 150 + Math.random() * 80 + prog * 120, amp: 12 + Math.random() * 28,
           p: Math.random() * 6.28, spin: Math.random() * 6.28, spinV: (Math.random() - .5) * 1.8});
-        flyTimer = (.3 + Math.random() * .3) * (1 - prog * .35);
+        flyTimer = (.85 + Math.random() * .7) * (1 - prog * .35);
       }
       rainTimer -= dt;
       if (rainTimer <= 0){
@@ -878,11 +1011,12 @@ function update(dt){
         if (inMouth){
           items.splice(i, 1);
           if (it.kind === "fly"){
-            earned += it.golden ? 6 : 2;
-            burst(it.x, top, it.golden ? "255,214,110" : "150,225,255", it.golden ? 20 : 12);
-            tone(notes[earned % notes.length] * (it.golden ? 2 : 1), .3);
+            earned += it.golden ? CONFIG.goldStarValue : CONFIG.starValue;
+            burst(it.x, top, it.golden ? "255,214,110" : "150,225,255", it.golden ? 46 : 12);
+            if (it.golden) [0, 2, 4, 5].forEach((n, k) => setTimeout(() => tone(notes[n] * 2, .45), k * 80));
+            else tone(notes[(earned / CONFIG.starValue | 0) % notes.length], .3);
           } else {
-            earned = Math.max(0, earned - 4);
+            earned = Math.max(0, earned - CONFIG.shadowPenalty);
             burst(it.x, top, "150,120,220", 14);
             if (!reduced) jar.shake = .3;
             tone(140, .25, "triangle", .09);
@@ -1024,7 +1158,7 @@ function drawGem(x, y, r, spin, rare){
 function drawJar(){
   const x = jar.x + (jar.shake > 0 ? Math.sin(jar.shake * 70) * 5 : 0);
   const w = jar.w, h = jar.h, top = H - 30 - h;
-  const prog = Math.min(earned / 60, 1);
+  const prog = Math.min(earned / (CONFIG.starValue * 30), 1);
   const g = ctx.createRadialGradient(x, top + h * .6, 5, x, top + h * .6, w * 1.7);
   g.addColorStop(0, `rgba(140,225,255,${.14 + prog * .55})`);
   g.addColorStop(1, "rgba(140,225,255,0)");
@@ -1153,7 +1287,7 @@ function draw(){
   // While the reveal or card overlay covers the screen, the grove is almost
   // entirely hidden behind it. Drawing it anyway starved the main thread and
   // made the CSS lantern animations lag behind their timers, so skip it.
-  if (state === "reveal" || state === "card"){
+  if (state === "reveal" || state === "card" || state === "artview"){
     ctx.clearRect(0, 0, W, H);
     for (const p of particles){
       const a = Math.max(0, p.life / p.max);
@@ -1193,7 +1327,7 @@ function loop(now){
   const dt = Math.min((now - last) / 1000, .05);
   last = now;
   // the ambient drift and scenery don't need updating behind an overlay either
-  if (state === "reveal" || state === "card"){
+  if (state === "reveal" || state === "card" || state === "artview"){
     t += dt;
     for (let i = particles.length - 1; i >= 0; i--){
       const p = particles[i];
