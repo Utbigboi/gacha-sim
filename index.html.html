@@ -1,0 +1,1216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lantern of wishes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Grandstander:wght@500;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<script>
+/* ============================================================
+   EDIT THIS SECTION TO PERSONALISE THE GIFT
+   ============================================================ */
+const CONFIG = {
+  friendName: "Friend",
+  fromName:   "Me",
+  message:    "Another year of you being wonderful. I hope this one is full of good surprises, late-night talks, and everything you've been wishing for.",
+
+  // Optional. Put an image file in the SAME FOLDER as this HTML file and write
+  // its filename here, e.g. "art.png". Leave "" to keep the glowing orb.
+  // A PNG with a transparent background looks best.
+  heroImage:  "",
+  heroAlt:    "",   // short description of the image, for screen readers
+
+  startingGlow:   200,   // glow they start with (10 glow = 1 lantern)
+                         // 200 covers 20 lanterns, so the birthday card is
+                         // guaranteed in the very first session
+  pullCost:       10,
+  pityAt:         20,    // legendary is guaranteed by this many lanterns
+  legendaryRate:  0.04,
+  rareRate:       0.22,
+  candles:        5,
+
+  commons: [
+    { icon: "🪨", name: "A suspiciously round pebble", desc: "Found on the path. Probably not magic. Probably." },
+    { icon: "🍰", name: "Crumbs from last year's cake", desc: "Vintage. Aged to perfection." },
+    { icon: "🍃", name: "A leaf shaped like a heart", desc: "If you squint. A lot." },
+    { icon: "🧦", name: "One sock", desc: "The other one is out there somewhere, living its best life." },
+    { icon: "🕯️", name: "A slightly used candle", desc: "Still has one wish left in it." },
+    { icon: "🪲", name: "A firefly that refuses to glow", desc: "It's shy. Give it time." }
+  ],
+  rares: [
+    { icon: "🎟️", name: "Coupon: snack of your choice", desc: "Redeem with the person who made this. No expiry date." },
+    { icon: "🎬", name: "Coupon: movie night, your pick", desc: "Even the weird one. Especially the weird one." },
+    { icon: "📞", name: "Coupon: one late-night call", desc: "Nobody is allowed to hang up first." },
+    { icon: "🏅", name: "Certificate of being excellent", desc: "Officially recognised by the committee of me." }
+  ],
+  // SIX LEGENDARY CHARACTERS. Put each image file in the same folder as this
+  // HTML file and write its filename below. Wide images (roughly 2:1, like
+  // 1080x546) fit the card best; PNGs with a transparent background look
+  // nicest. Leave "image" as "" and the slot falls back to the star symbol.
+  // You can rename these freely — the names and lines are all yours.
+  legendaries: [
+    { image: "", name: "Character One",   desc: "Write a line about them here." },
+    { image: "", name: "Character Two",   desc: "Write a line about them here." },
+    { image: "", name: "Character Three", desc: "Write a line about them here." },
+    { image: "", name: "Character Four",  desc: "Write a line about them here." },
+    { image: "", name: "Character Five",  desc: "Write a line about them here." },
+    { image: "", name: "Character Six",   desc: "Write a line about them here." }
+  ],
+
+  bonusWishes: [
+    "May your snacks never go stale.",
+    "May every group photo catch your good side.",
+    "May your luck be ridiculous this year.",
+    "May your alarm let you sleep in on weekends.",
+    "May every pull you make be a good one."
+  ]
+};
+</script>
+<style>
+  :root{
+    --glow:#8fe3ff; --peach:#a6b8ff; --mist:#b9c9f2; --paper:#eef6ff; --ink:#12203f;
+    --common:#7fc8d8; --rare:#a6a6ff; --legend:#ffce54;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    overflow:hidden;user-select:none;-webkit-user-select:none;
+    background:#050b22;
+    font-family:"Grandstander",system-ui,sans-serif;color:var(--paper);
+  }
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .screen{position:fixed;inset:0;display:grid;place-items:center;padding:64px 18px 24px}
+  .overlay{z-index:5;background:rgba(5,11,34,.8);padding:24px 18px}
+  .hidden{display:none !important}
+  button{font:inherit;cursor:pointer;color:inherit}
+  button:focus-visible{outline:3px solid var(--peach);outline-offset:3px}
+
+  .r1{--rc:var(--common)} .r2{--rc:var(--rare)} .r3{--rc:var(--legend)}
+
+  /* top bar */
+  #topbar{position:fixed;z-index:3;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:12px 16px}
+  .glow-count{display:flex;align-items:center;gap:.45em;font-size:1.25rem;font-weight:700;color:var(--glow)}
+  .dot{width:12px;height:12px;border-radius:50%;background:#e8fbff;box-shadow:0 0 10px 5px rgba(143,227,255,.85)}
+  .chip{background:rgba(180,215,255,.14);border:0;border-radius:999px;padding:.4em .95em;font-size:.9rem;margin-left:6px}
+
+  /* shrine */
+  #shrine{z-index:1}
+  .shrine{text-align:center;width:100%;max-width:30rem}
+  .shrine h1{font-size:clamp(2.3rem,8vw,3.8rem);line-height:1;margin:0 0 .25em;color:var(--glow);text-shadow:0 0 28px rgba(143,227,255,.5)}
+  .sub{color:var(--mist);font-size:1.05rem;line-height:1.45;margin:0 auto .4em;max-width:24rem}
+  #bigLantern,#heroImg{height:clamp(130px,30vh,230px);display:block;margin:0 auto;animation:bob 4s ease-in-out infinite}
+  #heroImg{width:auto;max-width:min(320px,82vw);object-fit:contain;
+    filter:drop-shadow(0 0 26px rgba(143,227,255,.55)) drop-shadow(0 0 60px rgba(106,168,255,.35))}
+  .heroWrap{position:relative;display:grid;place-items:center}
+  .heroWrap::before{content:"";position:absolute;width:min(340px,86vw);aspect-ratio:1;border-radius:50%;
+    background:radial-gradient(circle,rgba(143,227,255,.32) 0%,rgba(106,168,255,.12) 45%,transparent 70%)}
+  .heroWrap>*{position:relative}
+  @keyframes bob{50%{transform:translateY(-10px)}}
+  .pity{color:var(--mist);font-size:.95rem;margin:.3em 0 1em}
+  .pull-row{display:flex;gap:12px;justify-content:center}
+  .pull{flex:1;max-width:14rem;border:0;border-radius:18px;padding:.7em .8em;display:flex;flex-direction:column;align-items:center;background:rgba(180,215,255,.16);transition:transform .12s}
+  .pull:active{transform:scale(.96)}
+  .pull .big{font-size:1.1rem;font-weight:700}
+  .pull .cost{font-size:.85rem;opacity:.8}
+  .pull.main{background:var(--glow);color:var(--ink);box-shadow:0 0 30px rgba(143,227,255,.4)}
+  .pull.short{opacity:.55}
+  .link{background:none;border:0;color:var(--peach);font-size:1rem;margin-top:1.1em;text-decoration:underline;text-underline-offset:4px}
+  .toast{min-height:1.4em;margin:.8em 0 0;color:var(--paper);font-size:.95rem;transition:opacity .4s}
+
+  /* catch hud */
+  #catchHud{position:fixed;z-index:3;top:12px;left:0;right:0;display:flex;justify-content:space-between;padding:0 18px;pointer-events:none;font-size:1.3rem;font-weight:700}
+  #earned{color:var(--glow);text-shadow:0 0 14px rgba(143,227,255,.55)}
+  #catchHint{position:fixed;z-index:3;top:52px;width:100%;text-align:center;color:var(--mist);pointer-events:none;transition:opacity 1s}
+
+  /* reveal */
+  #reveal.best2{background:radial-gradient(circle at 50% 60%,rgba(166,166,255,.3),rgba(5,11,34,.86) 70%)}
+  #reveal.best3{background:radial-gradient(circle at 50% 60%,rgba(255,206,84,.34),rgba(120,70,10,.22) 45%,rgba(5,11,34,.88) 75%)}
+  .launch{position:absolute;inset:0;overflow:hidden}
+  /* the lantern reveal: a centred cluster that lights up one at a time */
+  .launchInner{position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:26px;padding:20px;text-align:center}
+  .orbs{display:flex;flex-wrap:wrap;gap:18px 22px;justify-content:center;align-items:center;
+    max-width:min(640px,92vw)}
+  .orb{width:58px;height:74px;border-radius:46% 46% 42% 42%;position:relative;opacity:0;
+    background:radial-gradient(circle at 50% 45%,#ffffff 0%,var(--rc) 60%,rgba(0,0,0,.2) 100%);
+    box-shadow:0 0 26px 9px var(--rc);
+    animation:orbIn .75s cubic-bezier(.2,.9,.3,1.3) forwards, float 3.2s ease-in-out infinite alternate}
+  .orb.r2{width:68px;height:86px}
+  .orb.r3{width:88px;height:112px;box-shadow:0 0 54px 20px var(--rc)}
+  .orb.r3::after{content:"";position:absolute;inset:-16px;border-radius:50%;
+    border:2px solid var(--rc);opacity:.5;animation:halo 1.7s ease-in-out infinite alternate}
+  @keyframes orbIn{
+    0%{opacity:0;transform:translateY(26px) scale(.35)}
+    60%{opacity:1;transform:translateY(-6px) scale(1.14)}
+    100%{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes float{to{transform:translateY(-7px)}}
+  @keyframes halo{to{transform:scale(1.24);opacity:.1}}
+
+  .tally .line{font-size:1.3rem;color:var(--paper);margin:0;min-height:1.5em;font-weight:700}
+  .tally .sofar{font-size:1rem;color:var(--mist);margin:.35em 0 0}
+
+  .launchOut{animation:launchOut .9s ease forwards}
+  @keyframes launchOut{to{opacity:0;transform:scale(1.35)}}
+
+  /* how long until the next card turns itself over */
+  .meter{width:min(300px,86vw);height:4px;border-radius:99px;background:rgba(180,215,255,.2);overflow:hidden}
+  .meter i{display:block;height:100%;width:100%;background:var(--rc);transform-origin:left;
+    animation:drain 3.6s linear forwards}
+  @keyframes drain{to{transform:scaleX(0)}}
+  .skip{position:absolute;top:14px;right:14px;z-index:2}
+  .single{display:flex;flex-direction:column;align-items:center;gap:18px}
+  .item-card{width:min(300px,86vw);padding:30px 22px 24px;border-radius:24px;background:var(--paper);color:var(--ink);text-align:center;border:4px solid var(--rc);box-shadow:0 0 50px 8px var(--rc)}
+  .item-card.pop{animation:pop .5s cubic-bezier(.2,.9,.3,1.3)}
+  .item-card.r3.pop{animation:pop .5s cubic-bezier(.2,.9,.3,1.3),shine 1.6s ease-in-out .5s infinite alternate}
+  @keyframes pop{from{opacity:0;transform:scale(.6) rotate(-6deg)}}
+  @keyframes shine{to{box-shadow:0 0 80px 22px var(--rc)}}
+  .emoji{font-size:4rem;line-height:1.1}
+  #rImg{display:block;width:calc(100% + 44px);margin:-30px -22px 4px;border-radius:20px 20px 0 0;
+    object-fit:cover;background:rgba(18,32,63,.06)}
+  .item-card.r3 #rImg{box-shadow:0 2px 18px rgba(255,206,84,.45)}
+  .tile .timg{display:block;width:100%;height:52px;object-fit:cover;border-radius:9px;margin-bottom:5px}
+  .row .rimg{width:52px;height:34px;object-fit:cover;border-radius:7px}
+  .row .rimg.locked-art{filter:brightness(0) opacity(.25)}
+  .rarity{display:inline-block;background:var(--rc);border-radius:999px;padding:.15em .9em;font-size:.9rem;font-weight:700;margin:.7em 0 .1em}
+  .item-card h3{font-family:"Kalam",cursive;font-size:1.5rem;line-height:1.2;margin:.3em 0}
+  .item-card p{margin:0;line-height:1.45}
+  .extra{font-weight:700;margin-top:.8em !important;color:#3d5bbf}
+  .continue{background:rgba(180,215,255,.16);border:0;border-radius:999px;padding:.55em 1.4em;font-size:1rem}
+  .summary{width:min(560px,100%);max-height:90dvh;overflow:auto;text-align:center;padding:4px}
+  .summary h2{font-size:1.8rem;color:var(--glow);margin:.2em 0 .7em}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;margin-bottom:1.2em}
+  .tile{background:var(--paper);color:var(--ink);border-radius:14px;border-top:5px solid var(--rc);padding:10px 6px;font-size:.78rem;line-height:1.25}
+  .tile .ti{font-size:2rem;display:block;margin-bottom:2px}
+  .tile .tr{display:block;font-size:.68rem;font-weight:700;color:var(--rc);
+    filter:brightness(.72);margin-bottom:3px}
+  .tile.r3 .tr{color:#8a6416;filter:none}
+  .tile .tn{display:inline-block;margin-top:4px;background:var(--rc);color:#12203f;
+    border-radius:99px;padding:.05em .6em;font-size:.66rem;font-weight:700}
+  .tile{animation:tileIn .4s ease backwards}
+  @keyframes tileIn{from{opacity:0;transform:translateY(10px) scale(.9)}}
+  .tile.r3{box-shadow:0 0 22px 4px var(--rc)}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+  .btn{border:0;border-radius:999px;padding:.7em 1.5em;font-size:1.05rem;font-weight:700}
+  .btn.gold{background:var(--glow);color:var(--ink)}
+  .btn.ghost{background:rgba(180,215,255,.16)}
+
+  /* collection */
+  .panel{width:min(480px,100%);max-height:88dvh;overflow:auto;background:var(--paper);color:var(--ink);border-radius:22px;padding:18px 20px 22px}
+  .panel-head{display:flex;justify-content:space-between;align-items:center}
+  .panel-head h2{margin:0;font-size:1.6rem}
+  .panel .chip{background:rgba(18,32,63,.1)}
+  .col-h{margin:1.1em 0 .4em;font-size:1rem;display:flex;align-items:center;gap:.5em}
+  .col-h::before{content:"";width:12px;height:12px;border-radius:50%;background:var(--rc)}
+  .row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(18,32,63,.1)}
+  .row .ri{font-size:1.6rem;width:2rem;text-align:center}
+  .row .rn{flex:1;line-height:1.3}
+  .row.locked{opacity:.45}
+  .row .open{background:var(--glow);border:0;border-radius:999px;padding:.3em .9em;font-weight:700}
+
+  /* birthday card */
+  .card{background:var(--paper);color:var(--ink);width:100%;max-width:25rem;max-height:92dvh;overflow:auto;border-radius:22px 22px 22px 6px;padding:20px 24px 24px;text-align:center;transform:rotate(-1.2deg);box-shadow:0 24px 70px rgba(0,0,0,.4);animation:pop .6s cubic-bezier(.2,.9,.3,1.2)}
+  .card svg{width:100%;max-width:250px;display:block;margin:0 auto 4px}
+  .card h2{font-family:"Kalam",cursive;font-size:1.6rem;line-height:1.2;margin:.2em 0 .3em}
+  #message p{font-family:"Kalam",cursive;font-size:1.2rem;line-height:1.6;margin:0 0 .8em}
+  #message .sign{text-align:right;font-weight:700}
+  #message{animation:fadein 1.2s ease}
+  @keyframes fadein{from{opacity:0}}
+  .card .btn.ghost{background:rgba(18,32,63,.1);margin-top:.6em}
+  .flame{transform-box:fill-box;transform-origin:50% 100%;animation:flicker .16s infinite alternate}
+  @keyframes flicker{to{transform:scaleY(.86) skewX(4deg)}}
+  .smoke{opacity:0}
+  .candle{cursor:pointer;outline:none}
+  .candle .ring{stroke:transparent}
+  .candle:focus-visible .ring{stroke:var(--peach)}
+  .candle.out .flame{opacity:0;animation:none;transition:opacity .2s}
+  .candle.out .smoke{animation:smoke 1.3s ease-out forwards}
+  @keyframes smoke{0%{opacity:.55;transform:translateY(0)}100%{opacity:0;transform:translateY(-24px) scale(1.8)}}
+
+  @media (max-width:420px){ .pull .big{font-size:1rem} }
+  @media (prefers-reduced-motion:reduce){
+    #bigLantern,.flame,.item-card.pop,.item-card.r3.pop,.card{animation:none}
+    .orb{animation:orbIn .01s forwards}
+    .meter i{animation:none}
+    .orb.r3::after{animation:none}
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<header id="topbar">
+  <div class="glow-count"><span class="dot"></span><span id="glow">0</span></div>
+  <div>
+    <button id="colBtn" class="chip">Collection</button>
+    <button id="mute" class="chip" aria-pressed="false">Sound on</button>
+  </div>
+</header>
+
+<main id="shrine" class="screen">
+  <div class="shrine">
+    <h1>Lantern of wishes</h1>
+    <p class="sub" id="shrineSub"></p>
+    <div class="heroWrap"><svg id="bigLantern" viewBox="0 0 220 220" aria-hidden="true">
+      <defs>
+        <radialGradient id="core" cx="42%" cy="38%" r="70%">
+          <stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#d6f2ff"/>
+          <stop offset=".75" stop-color="#8fc8f5"/><stop offset="1" stop-color="#5b7fd8"/>
+        </radialGradient>
+        <radialGradient id="halo">
+          <stop offset="0" stop-color="#8fe3ff" stop-opacity=".55"/><stop offset=".6" stop-color="#6aa8ff" stop-opacity=".18"/>
+          <stop offset="1" stop-color="#6aa8ff" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="shell" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#eaf6ff" stop-opacity=".85"/><stop offset=".5" stop-color="#bcd9ff" stop-opacity=".45"/>
+          <stop offset="1" stop-color="#c9b8ff" stop-opacity=".7"/>
+        </linearGradient>
+      </defs>
+      <circle cx="110" cy="110" r="108" fill="url(#halo)"/>
+      <path d="M110 16 a94 94 0 1 1-.1 0 z" fill="none" stroke="url(#shell)" stroke-width="9" stroke-linecap="round" stroke-dasharray="330 260" transform="rotate(-28 110 110)"/>
+      <path d="M110 34 a76 76 0 1 1-.1 0 z" fill="none" stroke="url(#shell)" stroke-width="11" stroke-linecap="round" stroke-dasharray="300 180" transform="rotate(66 110 110)"/>
+      <circle cx="110" cy="112" r="62" fill="url(#core)"/>
+      <path d="M72 96 q26-30 62-16" fill="none" stroke="#ffffff" stroke-opacity=".7" stroke-width="5" stroke-linecap="round"/>
+      <path d="M78 132 q28 26 60 6" fill="none" stroke="#ffffff" stroke-opacity=".25" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="110" cy="112" r="62" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="2"/>
+    </svg></div>
+    <p class="pity" id="pity"></p>
+    <div class="pull-row">
+      <button id="pull1" class="pull"><span class="big">Light 1 lantern</span><span class="cost" id="cost1"></span></button>
+      <button id="pull10" class="pull main"><span class="big">Light 10 lanterns</span><span class="cost" id="cost10"></span></button>
+    </div>
+    <button id="catchBtn" class="link">Need more glow? Go catch star gems</button>
+    <p class="toast" id="toast" role="status"></p>
+  </div>
+</main>
+
+<div id="catchHud" class="hidden"><span id="timer">30</span><span id="earned">+0</span></div>
+<p id="catchHint" class="hidden">Catch the star gems, dodge the shadow drops</p>
+
+<section id="reveal" class="screen overlay hidden">
+  <div id="launch" class="launch"></div>
+  <div id="single" class="single hidden">
+    <div id="itemCard" class="item-card">
+      <img id="rImg" class="hidden" alt="">
+      <div class="emoji" id="rIcon"></div>
+      <div class="rarity" id="rRarity"></div>
+      <h3 id="rName"></h3>
+      <p id="rDesc"></p>
+      <p class="extra" id="rExtra"></p>
+    </div>
+    <div class="meter" id="rMeter"><i></i></div>
+    <button class="continue" id="rNext">Continue</button>
+  </div>
+  <div id="summary" class="summary hidden">
+    <h2>Your haul</h2>
+    <div id="sumGrid" class="grid"></div>
+    <div class="actions">
+      <button id="sumCard" class="btn gold hidden">Open your birthday card</button>
+      <button id="sumBack" class="btn ghost">Back to the lantern</button>
+    </div>
+  </div>
+  <button id="skip" class="chip skip">Skip</button>
+</section>
+
+<section id="collection" class="screen overlay hidden">
+  <div class="panel">
+    <div class="panel-head"><h2>Collection</h2><button id="colClose" class="chip">Close</button></div>
+    <div id="colList"></div>
+  </div>
+</section>
+
+<section id="cardScreen" class="screen overlay hidden" aria-live="polite">
+  <div class="card">
+    <svg id="cake" viewBox="0 0 240 175" aria-label="Birthday cake"></svg>
+    <h2 id="cardTitle"></h2>
+    <div id="message" class="hidden">
+      <p id="msgText"></p>
+      <p class="sign" id="signText"></p>
+    </div>
+    <button id="cardBack" class="btn ghost">Back to the lantern</button>
+  </div>
+</section>
+
+<script>
+const $ = id => document.getElementById(id);
+const show = (id, on = true) => $(id).classList.toggle("hidden", !on);
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const RARITY = {1: "Common", 2: "Rare", 3: "Legendary"};
+
+/* ---------- pool ---------- */
+const COMMONS = CONFIG.commons.map((it, i) => ({...it, id: "c" + i, rarity: 1}));
+const RARES = CONFIG.rares.map((it, i) => ({...it, id: "r" + i, rarity: 2}));
+const LEG = {id: "leg", rarity: 3, icon: "💌", name: `A birthday card for ${CONFIG.friendName}`,
+             desc: "Folded very carefully. Smells faintly of cake."};
+// the six characters, each its own legendary
+const CHARS = CONFIG.legendaries.map((c, i) => ({...c, id: "L" + i, rarity: 3, icon: "✦"}));
+const LEGENDARIES = [LEG, ...CHARS];
+
+let glow = CONFIG.startingGlow, pity = 0, owned = {};
+let state = "shrine";
+
+$("shrineSub").textContent = `A wish lantern for ${CONFIG.friendName}'s birthday. Every lantern holds a prize, and one of them is very special.`;
+if (CONFIG.heroImage){
+  const img = new Image();
+  img.id = "heroImg";
+  img.alt = CONFIG.heroAlt || "";
+  img.src = CONFIG.heroImage;
+  img.onload = () => $("bigLantern").replaceWith(img);
+  img.onerror = () => toast(`Couldn't load "${CONFIG.heroImage}". Check it sits in the same folder as this file.`);
+}
+$("cost1").textContent = `${CONFIG.pullCost} glow`;
+$("cost10").textContent = `${CONFIG.pullCost * 10} glow`;
+
+function updateTop(){
+  $("glow").textContent = glow;
+  const gotChars = CHARS.filter(c => owned[c.id]).length;
+  $("pity").textContent = !owned.leg
+    ? `Your birthday card is guaranteed within ${CONFIG.pityAt - pity} lanterns`
+    : `Characters found: ${gotChars} of ${CHARS.length}  ·  next legendary within ${CONFIG.pityAt - pity} lanterns`;
+  $("pull1").classList.toggle("short", glow < CONFIG.pullCost);
+  $("pull10").classList.toggle("short", glow < CONFIG.pullCost * 10);
+}
+let toastTimer;
+function toast(msg){
+  $("toast").textContent = msg; $("toast").style.opacity = 1;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $("toast").style.opacity = 0, 3200);
+}
+
+/* ---------- sound ---------- */
+let actx = null, muted = false;
+const notes = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
+function tone(freq, dur = .3, type = "sine", vol = .07){
+  if (muted) return;
+  try{
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime + dur);
+    o.connect(g).connect(actx.destination); o.start(); o.stop(actx.currentTime + dur);
+  }catch(e){}
+}
+$("mute").onclick = () => {
+  muted = !muted;
+  $("mute").textContent = muted ? "Sound off" : "Sound on";
+  $("mute").setAttribute("aria-pressed", muted);
+};
+
+/* ---------- pulling ---------- */
+function rollOne(){
+  pity++;
+  const r = Math.random();
+  if (pity >= CONFIG.pityAt || r < CONFIG.legendaryRate){
+    pity = 0;
+    // the birthday card is always the first legendary, so the message can't be
+    // missed; after that, legendaries are characters, favouring unseen ones
+    if (!owned.leg) return LEG;
+    const fresh = CHARS.filter(c => !owned[c.id]);
+    return fresh.length ? pick(fresh) : pick(CHARS);
+  }
+  if (r < CONFIG.legendaryRate + CONFIG.rareRate) return pick(RARES);
+  return pick(COMMONS);
+}
+
+function pull(n){
+  if (state !== "shrine") return;
+  const cost = n * CONFIG.pullCost;
+  if (glow < cost){
+    toast(`You need ${cost - glow} more glow for that. Go gather some star gems!`);
+    tone(196, .25, "triangle", .06);
+    return;
+  }
+  glow -= cost;
+  const got = Array.from({length: n}, rollOne);
+  if (n >= 10 && !got.some(it => it.rarity >= 2)) got[n - 1] = pick(RARES);
+
+  const results = got.map(item => {
+    const count = (owned[item.id] || 0) + 1;
+    owned[item.id] = count;
+    let extra = "";
+    if (count === 1) extra = item.rarity === 3 ? "New! Open it when the lanterns are done." : "New!";
+    else if (item.rarity === 3) extra = "Already yours. Bonus wish: " + pick(CONFIG.bonusWishes);
+    else { const back = item.rarity === 2 ? 3 : 1; glow += back; extra = `Duplicate, turned back into ${back} glow`; }
+    return {item, extra};
+  });
+  updateTop();
+  startReveal(results);
+}
+$("pull1").onclick = () => pull(1);
+$("pull10").onclick = () => pull(10);
+
+/* ---------- reveal ---------- */
+const rv = {res: [], idx: -1, phase: "", timer: 0, exit: 0, fallback: 0, guard: 0};
+const CARD_HOLD = 4900;   // how long each card stays up before turning itself over
+
+function startReveal(res){
+  clearTimeout(rv.timer); clearTimeout(rv.exit); clearTimeout(rv.fallback);
+  state = "reveal";
+  Object.assign(rv, {res, idx: -1, phase: "launch", guard: 0});
+  const best = Math.max(...res.map(r => r.item.rarity));
+  $("reveal").className = "screen overlay best" + best;
+  show("launch"); show("single", false); show("summary", false); show("skip");
+
+  // pacing, all in seconds — raise these two to slow the reveal further
+  const STEP = res.length > 1 ? .5 : 0;    // gap between lanterns lighting up
+  const HOLD = res.length > 1 ? 2.9 : 1.4; // pause on the finished cluster
+
+  const launch = $("launch");
+  launch.innerHTML = "";
+  const inner = document.createElement("div");
+  inner.className = "launchInner";
+
+  const heading = document.createElement("div");
+  heading.className = "tally";
+  const line = document.createElement("p");
+  line.className = "line";
+  line.textContent = res.length > 1 ? `Lighting ${res.length} lanterns` : "Lighting a lantern";
+  const sofar = document.createElement("p");
+  sofar.className = "sofar";
+  heading.append(line, sofar);
+
+  const orbs = document.createElement("div");
+  orbs.className = "orbs";
+  inner.append(orbs, heading);
+  launch.appendChild(inner);
+
+  const counts = {1: 0, 2: 0, 3: 0};
+  let landed = 0;
+
+  // one lantern lights per tick; nothing races a CSS animation any more
+  function lightOne(i){
+    if (i >= res.length){ allLanded(); return; }
+    const item = res[i].item;
+    const el = document.createElement("div");
+    el.className = "orb r" + item.rarity;
+    // the float animation must not start until the pop-in finishes
+    el.style.animationDelay = "0s, .75s";
+    orbs.appendChild(el);
+
+    counts[item.rarity]++;
+    landed++;
+    const parts = [3, 2, 1].filter(k => counts[k]).map(k => `${counts[k]} ${RARITY[k].toLowerCase()}`);
+    line.textContent = res.length > 1 ? `${landed} of ${res.length} lanterns` : RARITY[item.rarity];
+    sofar.textContent = parts.join("  ·  ");
+
+    if (item.rarity === 3){
+      tone(1318.5, 1.3, "sine", .07);
+      burst(W / 2, H / 2, "255,206,84", 46, true);
+    } else {
+      tone(notes[i % notes.length] * (item.rarity === 2 ? 1.5 : 1), .34);
+    }
+
+    rv.timer = setTimeout(() => lightOne(i + 1), (item.rarity === 3 ? STEP + .9 : STEP) * 1000 || 400);
+  }
+
+  function allLanded(){
+    rv.guard = Date.now() + 500;
+    line.textContent = res.length > 1 ? `${res.length} lanterns` : line.textContent;
+    rv.exit = setTimeout(() => {
+      inner.classList.add("launchOut");
+      tone(notes[4], .55, "sine", .05);
+      rv.timer = setTimeout(nextCard, 900);
+    }, (reduced ? .4 : HOLD) * 1000);
+  }
+
+  rv.timer = setTimeout(() => lightOne(0), reduced ? 60 : 500);
+}
+
+function nextCard(){
+  clearTimeout(rv.timer); clearTimeout(rv.exit); clearTimeout(rv.fallback);
+  rv.idx++;
+  if (rv.idx >= rv.res.length){ finishReveal(); return; }
+  rv.phase = "single";
+  rv.guard = Date.now() + 900;
+  show("launch", false); show("single");
+  const {item, extra} = rv.res[rv.idx];
+  const card = $("itemCard");
+  card.className = "item-card r" + item.rarity;
+  void card.offsetWidth;
+  card.classList.add("pop");
+  const rImg = $("rImg");
+  if (item.image){
+    rImg.src = item.image;
+    rImg.alt = item.name;
+    rImg.classList.remove("hidden");
+    $("rIcon").classList.add("hidden");
+    // if the file is missing, quietly fall back to the symbol
+    rImg.onerror = () => { rImg.classList.add("hidden"); $("rIcon").classList.remove("hidden"); };
+  } else {
+    rImg.classList.add("hidden");
+    $("rIcon").classList.remove("hidden");
+  }
+  $("rIcon").textContent = item.icon;
+  $("rRarity").textContent = RARITY[item.rarity];
+  $("rName").textContent = item.name;
+  $("rDesc").textContent = item.desc;
+  $("rExtra").textContent = extra;
+  $("rNext").textContent = rv.res.length > 1 ? `Next (${rv.idx + 1} of ${rv.res.length})` : "Continue";
+
+  // restart the countdown bar, tinted to this card's rarity
+  const hold = item.rarity === 3 ? CARD_HOLD + 3200 : CARD_HOLD;
+  const meter = $("rMeter");
+  meter.className = "meter r" + item.rarity;
+  meter.innerHTML = "<i></i>";
+  meter.firstChild.style.animationDuration = (hold / 1000) + "s";
+
+  if (item.rarity === 1) tone(notes[2], .25);
+  if (item.rarity === 2){ tone(notes[3], .3); setTimeout(() => tone(notes[5], .4), 130); }
+  if (item.rarity === 3){
+    [0, 2, 3, 5].forEach((n, i) => setTimeout(() => tone(notes[n] * 1.5, .6), i * 130));
+    burst(W / 2, H / 2, "255,206,84", 50, true);
+  }
+  rv.timer = setTimeout(nextCard, reduced ? 1200 : hold);
+}
+
+function finishReveal(){
+  clearTimeout(rv.timer); clearTimeout(rv.exit); clearTimeout(rv.fallback);
+  const hasLeg = rv.res.some(r => r.item.rarity === 3);
+  if (rv.res.length === 1 && !hasLeg){ closeReveal(); return; }
+  rv.phase = "summary";
+  show("launch", false); show("single", false); show("skip", false); show("summary");
+  const grid = $("sumGrid"); grid.innerHTML = "";
+  rv.res.forEach(({item, extra}, n) => {
+    const t = document.createElement("div");
+    t.className = "tile r" + item.rarity;
+    t.style.animationDelay = (n * .06) + "s";
+    let i;
+    if (item.image){
+      i = document.createElement("img");
+      i.className = "timg"; i.src = item.image; i.alt = "";
+      i.onerror = () => { const sp = document.createElement("span");
+        sp.className = "ti"; sp.textContent = item.icon; i.replaceWith(sp); };
+    } else {
+      i = document.createElement("span"); i.className = "ti"; i.textContent = item.icon;
+    }
+    const lab = document.createElement("span"); lab.className = "tr"; lab.textContent = RARITY[item.rarity];
+    t.append(i, lab, document.createTextNode(item.name));
+    if (extra.startsWith("New")){
+      const nw = document.createElement("span"); nw.className = "tn"; nw.textContent = "New";
+      t.appendChild(nw);
+    }
+    grid.appendChild(t);
+  });
+  show("sumCard", hasLeg);
+  (hasLeg ? $("sumCard") : $("sumBack")).focus({preventScroll: true});
+}
+
+function closeReveal(){
+  rv.phase = "";
+  show("reveal", false);
+  state = "shrine";
+  updateTop();
+}
+
+$("reveal").addEventListener("click", () => {
+  // the guard stops one stray tap from blowing through several cards
+  if ((rv.phase === "launch" || rv.phase === "single") && Date.now() > rv.guard) nextCard();
+});
+$("skip").addEventListener("click", e => { e.stopPropagation(); rv.idx = rv.res.length; finishReveal(); });
+$("sumBack").onclick = closeReveal;
+$("sumCard").onclick = () => { show("reveal", false); rv.phase = ""; showCard(); };
+addEventListener("keydown", e => {
+  if (state === "reveal" && (rv.phase === "launch" || rv.phase === "single")
+      && (e.key === "Enter" || e.key === " ") && e.target.tagName !== "BUTTON"
+      && Date.now() > rv.guard){
+    e.preventDefault(); nextCard();
+  }
+  if (e.key === "Escape" && !$("collection").classList.contains("hidden")) closeCollection();
+});
+
+/* ---------- collection ---------- */
+function openCollection(){
+  if (state !== "shrine") return;
+  const list = $("colList"); list.innerHTML = "";
+  [[3, LEGENDARIES], [2, RARES], [1, COMMONS]].forEach(([rar, items]) => {
+    const h = document.createElement("h3");
+    h.className = "col-h r" + rar;
+    const found = items.filter(it => owned[it.id]).length;
+    h.textContent = `${RARITY[rar]}  ${found}/${items.length}`;
+    list.appendChild(h);
+    items.forEach(it => {
+      const row = document.createElement("div");
+      const have = owned[it.id] || 0;
+      row.className = "row" + (have ? "" : " locked");
+      let ic;
+      if (it.image){
+        // unfound characters show as a darkened silhouette, so there's
+        // something to chase rather than a blank question mark
+        ic = document.createElement("img");
+        ic.className = "rimg" + (have ? "" : " locked-art");
+        ic.src = it.image; ic.alt = "";
+        ic.onerror = () => { const sp = document.createElement("span");
+          sp.className = "ri"; sp.textContent = have ? it.icon : "❔"; ic.replaceWith(sp); };
+      } else {
+        ic = document.createElement("span"); ic.className = "ri"; ic.textContent = have ? it.icon : "❔";
+      }
+      const nm = document.createElement("span"); nm.className = "rn";
+      nm.textContent = have ? `${it.name}  x${have}` : "Not found yet";
+      row.append(ic, nm);
+      if (have && it.id === "leg"){
+        const b = document.createElement("button"); b.className = "open"; b.textContent = "Open";
+        b.onclick = () => { closeCollection(); showCard(); };
+        row.appendChild(b);
+      }
+      list.appendChild(row);
+    });
+  });
+  show("collection");
+  $("colClose").focus({preventScroll: true});
+}
+function closeCollection(){ show("collection", false); }
+$("colBtn").onclick = openCollection;
+$("colClose").onclick = closeCollection;
+
+/* ---------- birthday card ---------- */
+function showCard(){
+  state = "card";
+  const svgNS = "http://www.w3.org/2000/svg";
+  const cake = $("cake");
+  cake.innerHTML = `
+    <ellipse cx="120" cy="162" rx="104" ry="10" fill="#e8d8bf"/>
+    <rect x="34" y="112" width="172" height="48" rx="10" fill="#9b7fd1"/>
+    <rect x="34" y="138" width="172" height="6" fill="#fff6e6" opacity=".55"/>
+    <rect x="62" y="74" width="116" height="42" rx="9" fill="#f6a98a"/>
+    <path d="M62 84 q0-10 10-10 h96 q10 0 10 10 v6 q-6 8-12 0 q-6 10-14 0 q-6 9-13 0 q-7 11-14 0 q-6 9-13 0 q-7 10-14 0 q-6 9-12 0 q-7 8-14 0z" fill="#fff6e6"/>
+    <path d="M34 122 q0-10 10-10 h152 q10 0 10 10 v5 q-7 9-14 0 q-8 11-17 0 q-8 9-16 0 q-8 11-17 0 q-8 9-16 0 q-8 11-17 0 q-8 9-16 0 q-8 11-17 0 q-8 9-14 0z" fill="#fff6e6"/>`;
+  const n = Math.max(1, Math.min(CONFIG.candles, 9));
+  let remaining = n;
+  for (let i = 0; i < n; i++){
+    const cx = n === 1 ? 120 : 78 + (84 / (n - 1)) * i;
+    const g = document.createElementNS(svgNS, "g");
+    g.setAttribute("class", "candle");
+    g.setAttribute("tabindex", "0");
+    g.setAttribute("role", "button");
+    g.setAttribute("aria-label", `Blow out candle ${i + 1}`);
+    g.innerHTML = `
+      <rect class="ring" x="${cx - 13}" y="14" width="26" height="64" rx="10" fill="transparent" stroke-width="2"/>
+      <rect x="${cx - 3.5}" y="48" width="7" height="28" rx="2" fill="${i % 2 ? "#6fb1a0" : "#8ec5e8"}"/>
+      <line x1="${cx}" y1="48" x2="${cx}" y2="43" stroke="#2a1f33" stroke-width="1.5"/>
+      <g class="flame">
+        <ellipse cx="${cx}" cy="34" rx="5.5" ry="10" fill="#ffd66b"/>
+        <ellipse cx="${cx}" cy="37" rx="2.6" ry="5" fill="#ff9a4a"/>
+      </g>
+      <circle class="smoke" cx="${cx}" cy="36" r="4" fill="#b9b0c4"/>`;
+    const blow = () => {
+      if (g.classList.contains("out")) return;
+      g.classList.add("out");
+      tone(notes[remaining % notes.length] / 2, .4, "triangle", .06);
+      remaining--;
+      if (remaining === 0) setTimeout(revealMessage, 500);
+    };
+    g.addEventListener("click", blow);
+    g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); blow(); } });
+    cake.appendChild(g);
+  }
+  $("cardTitle").textContent = "Make a wish, then tap each candle";
+  show("message", false);
+  show("cardScreen");
+}
+function revealMessage(){
+  $("cardTitle").textContent = `Happy birthday, ${CONFIG.friendName}!`;
+  $("msgText").textContent = CONFIG.message;
+  $("signText").textContent = `— ${CONFIG.fromName}`;
+  show("message");
+  for (let i = 0; i < 40; i++){
+    particles.push({x: Math.random() * W, y: H + Math.random() * 60, vx: (Math.random() - .5) * 30,
+      vy: -90 - Math.random() * 120, life: 4 + Math.random() * 2, max: 6, col: "170,235,255", r: 2.4, glow: true});
+  }
+  [4, 2, 0, 5].forEach((n, i) => setTimeout(() => tone(notes[n], .6), i * 160));
+}
+$("cardBack").onclick = () => { show("cardScreen", false); state = "shrine"; updateTop(); };
+
+/* ---------- canvas world + catch minigame ---------- */
+const cvs = $("c"), ctx = cvs.getContext("2d");
+let W, H, stars = [], flowers = [], vines = [], trees = [], mistBands = [], t = 0;
+const jar = {x: 0, tx: 0, w: 74, h: 92, shake: 0};
+let items = [], particles = [], flyTimer = 0, rainTimer = 2;
+let catchT = 0, earned = 0;
+const CATCH_TIME = 30;
+const keys = {left: false, right: false};
+const jarLights = Array.from({length: 45}, (_, i) => ({
+  lx: Math.random() * 2 - 1, ly: Math.min(1, (i / 45) * .85 + Math.random() * .12), p: Math.random() * 6.28
+}));
+function wanderer(){
+  return {x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+          vx: (Math.random() - .5) * 20, vy: -8 - Math.random() * 14, p: Math.random() * 6.28};
+}
+const ambient = Array.from({length: reduced ? 8 : 22}, wanderer);
+
+function resize(){
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  cvs.width = W * dpr; cvs.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  stars = Array.from({length: Math.round(W * H / 11000)}, () => ({
+    x: Math.random() * W, y: Math.random() * H * .5, r: Math.random() * 1.1 + .3, p: Math.random() * 6.28}));
+
+  trees = [
+    {x: -W * .04, w: W * .2, h: H * .92, lean: .05},
+    {x: W * 1.02, w: W * .22, h: H * .88, lean: -.06},
+    {x: W * .62, w: W * .1, h: H * .5, lean: .02}
+  ];
+
+  // hanging wisteria strands across the top
+  vines = [];
+  const vineCount = Math.max(7, Math.round(W / 105));
+  for (let i = 0; i < vineCount; i++){
+    const x = (W / vineCount) * (i + .25) + (Math.random() - .5) * 34;
+    const len = H * (.12 + Math.random() * .3);
+    const bells = [];
+    for (let y = len * .22; y < len; y += 13 + Math.random() * 8)
+      bells.push({y, side: Math.random() < .5 ? -1 : 1, r: 3.2 + Math.random() * 2.6});
+    vines.push({x, len, bells, sway: .5 + Math.random() * .8, p: Math.random() * 6.28});
+  }
+
+  mistBands = Array.from({length: 4}, (_, i) => ({
+    y: H * (.52 + i * .1), h: H * (.05 + Math.random() * .05),
+    speed: 6 + i * 4, off: Math.random() * W, a: .05 + Math.random() * .05}));
+
+  // glowing bell-flower field along the ground
+  flowers = [];
+  for (let x = -20; x < W + 20; x += 11){
+    const depth = Math.random();
+    flowers.push({
+      x: x + (Math.random() - .5) * 9,
+      base: H - 4 - depth * H * .1,
+      stem: 12 + Math.random() * 30 + (1 - depth) * 22,
+      lean: (Math.random() - .5) * 14,
+      r: 3.4 + (1 - depth) * 4.4,
+      p: Math.random() * 6.28,
+      a: .45 + (1 - depth) * .55
+    });
+  }
+  flowers.sort((a, b) => a.base - b.base);
+  jar.x = jar.tx = W / 2;
+}
+addEventListener("resize", resize);
+
+addEventListener("pointermove", e => { if (state === "catch") jar.tx = e.clientX; });
+addEventListener("pointerdown", e => { if (state === "catch") jar.tx = e.clientX; });
+addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft") keys.left = true;
+  if (e.key === "ArrowRight") keys.right = true;
+});
+addEventListener("keyup", e => {
+  if (e.key === "ArrowLeft") keys.left = false;
+  if (e.key === "ArrowRight") keys.right = false;
+});
+
+function startCatch(){
+  if (state !== "shrine") return;
+  state = "catch";
+  items = []; earned = 0; catchT = CATCH_TIME; flyTimer = 0; rainTimer = 2;
+  jar.x = jar.tx = W / 2;
+  show("shrine", false); show("topbar", false);
+  show("catchHud"); show("catchHint");
+  $("catchHint").style.opacity = 1;
+  setTimeout(() => $("catchHint").style.opacity = 0, 3500);
+  $("earned").textContent = "+0";
+}
+function endCatch(){
+  state = "shrine";
+  items = [];
+  glow += earned;
+  show("catchHud", false); show("catchHint", false);
+  show("shrine"); show("topbar");
+  updateTop();
+  toast(earned > 0 ? `You gathered ${earned} glow!` : "The gems all slipped past. Try again?");
+  [0, 2, 4].forEach((n, i) => setTimeout(() => tone(notes[n], .4), i * 120));
+}
+$("catchBtn").onclick = startCatch;
+
+function burst(x, y, col, n, glowy = false){
+  for (let i = 0; i < n; i++){
+    const a = Math.random() * Math.PI * 2, s = 40 + Math.random() * (glowy ? 220 : 110);
+    particles.push({x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 60,
+      life: glowy ? 1.2 + Math.random() : .5 + Math.random() * .4, max: glowy ? 2.2 : .9, col, r: glowy ? 2.6 : 2, glow: glowy});
+  }
+}
+
+function update(dt){
+  t += dt;
+  for (const a of ambient){
+    a.x += a.vx * dt + Math.sin(t + a.p) * .3;
+    a.y += a.vy * dt;
+    if (a.y < -20){ Object.assign(a, wanderer()); a.y = H + 10; }
+  }
+
+  if (state === "catch"){
+    catchT -= dt;
+    $("timer").textContent = Math.max(0, Math.ceil(catchT)) + "s";
+    if (catchT <= 0){ endCatch(); }
+    else {
+      const prog = 1 - catchT / CATCH_TIME;
+      if (keys.left) jar.tx -= 520 * dt;
+      if (keys.right) jar.tx += 520 * dt;
+      jar.tx = Math.min(Math.max(jar.tx, jar.w / 2 + 6), W - jar.w / 2 - 6);
+      jar.x += (jar.tx - jar.x) * Math.min(1, dt * 14);
+      jar.shake = Math.max(0, jar.shake - dt);
+
+      flyTimer -= dt;
+      if (flyTimer <= 0){
+        const bx = 30 + Math.random() * (W - 60);
+        items.push({kind: "fly", golden: Math.random() < .12, baseX: bx, x: bx, y: -20,
+          vy: 150 + Math.random() * 80 + prog * 120, amp: 12 + Math.random() * 28,
+          p: Math.random() * 6.28, spin: Math.random() * 6.28, spinV: (Math.random() - .5) * 1.8});
+        flyTimer = (.3 + Math.random() * .3) * (1 - prog * .35);
+      }
+      rainTimer -= dt;
+      if (rainTimer <= 0){
+        items.push({kind: "rain", x: 20 + Math.random() * (W - 40), y: -30, vy: 330 + Math.random() * 150 + prog * 170});
+        rainTimer = (.95 + Math.random() * .9) * (1 - prog * .45);
+      }
+
+      const top = H - 30 - jar.h;
+      for (let i = items.length - 1; i >= 0; i--){
+        const it = items[i];
+        const prevY = it.y;
+        it.y += it.vy * dt;
+        if (it.kind === "fly") it.x = it.baseX + Math.sin(t * 1.6 + it.p) * it.amp;
+        // swept test: a fast gem can clear the jar mouth entirely within one
+        // frame, so check whether it crossed the band rather than sits in it
+        const bandTop = top - 4, bandBottom = top + 22;
+        const crossed = prevY <= bandBottom && it.y >= bandTop;
+        const inMouth = crossed && Math.abs(it.x - jar.x) < jar.w / 2 + 8;
+        if (inMouth){
+          items.splice(i, 1);
+          if (it.kind === "fly"){
+            earned += it.golden ? 6 : 2;
+            burst(it.x, top, it.golden ? "255,214,110" : "150,225,255", it.golden ? 20 : 12);
+            tone(notes[earned % notes.length] * (it.golden ? 2 : 1), .3);
+          } else {
+            earned = Math.max(0, earned - 4);
+            burst(it.x, top, "150,120,220", 14);
+            if (!reduced) jar.shake = .3;
+            tone(140, .25, "triangle", .09);
+          }
+          $("earned").textContent = "+" + earned;
+        } else if (it.y > H + 30) items.splice(i, 1);
+      }
+    }
+  }
+
+  for (let i = particles.length - 1; i >= 0; i--){
+    const p = particles[i];
+    p.x += p.vx * dt; p.y += p.vy * dt;
+    if (p.glow){ p.vx *= .98; p.vy = p.vy * .98 - 4 * dt; } else p.vy += 160 * dt;
+    p.life -= dt;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+/* glow sprites: drawing a cached bitmap is far cheaper than building a
+   radial gradient for every mote, flower and particle on every frame */
+const spriteCache = new Map();
+function glowSprite(col){
+  let s = spriteCache.get(col);
+  if (s) return s;
+  s = document.createElement("canvas");
+  s.width = s.height = 128;
+  const g2 = s.getContext("2d");
+  const g = g2.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, `rgba(${col},1)`);
+  g.addColorStop(.22, `rgba(${col},.5)`);
+  g.addColorStop(.55, `rgba(${col},.14)`);
+  g.addColorStop(1, `rgba(${col},0)`);
+  g2.fillStyle = g; g2.fillRect(0, 0, 128, 128);
+  spriteCache.set(col, s);
+  return s;
+}
+function glowDot(x, y, r, col, alpha = 1){
+  const d = r * 10;
+  ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+  ctx.drawImage(glowSprite(col), x - d / 2, y - d / 2, d, d);
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = `rgba(255,255,255,${Math.max(0, Math.min(1, alpha))})`;
+  ctx.beginPath(); ctx.arc(x, y, r * .6, 0, 7); ctx.fill();
+}
+function softGlow(x, y, radius, col, alpha){
+  ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+  ctx.drawImage(glowSprite(col), x - radius, y - radius, radius * 2, radius * 2);
+  ctx.globalAlpha = 1;
+}
+function roundRect(x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+}
+// A four-pointed star crystal: straight faceted edges meeting at an inner waist,
+// facets radiating from the centre, iridescent pale rose shading into cyan.
+// Proportions were tuned by rendering it out and eyeballing the silhouette.
+function drawGem(x, y, r, spin, rare){
+  const tint = rare
+    ? {hi: "255,252,232", warm: "255,226,150", mid: "255,204,92",  low: "226,160,40",  rim: "255,247,220"}
+    : {hi: "255,250,252", warm: "252,225,240", mid: "186,231,255", low: "108,176,244", rim: "244,252,255"};
+
+  softGlow(x, y, r * 3.4, rare ? "255,214,110" : "170,225,255", .7 + .3 * Math.sin(spin * 2));
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(spin * .3);
+
+  const LONG = r * 1.30, SIDE = r * 1.14, INNER = r * .54;
+  const tips = [[0, -LONG], [SIDE, 0], [0, LONG], [-SIDE, 0]];
+
+  // eight points: four tips with an inner vertex between each pair
+  const pts = [];
+  for (let i = 0; i < 4; i++){
+    const a = tips[i], b = tips[(i + 1) % 4];
+    pts.push(a);
+    const dx = a[0] + b[0], dy = a[1] + b[1];
+    const d = Math.hypot(dx, dy) || 1;
+    pts.push([dx / d * INNER, dy / d * INNER]);
+  }
+  const outline = () => {
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath();
+  };
+
+  // soft white rim behind the body
+  outline();
+  ctx.strokeStyle = `rgba(${tint.rim},.9)`;
+  ctx.lineWidth = Math.max(2, r * .15);
+  ctx.lineJoin = "round";
+  ctx.stroke();
+
+  // body: light at the top, saturated toward the bottom
+  outline();
+  const g = ctx.createLinearGradient(0, -LONG, 0, LONG);
+  g.addColorStop(0,   `rgba(${tint.hi},.98)`);
+  g.addColorStop(.32, `rgba(${tint.warm},.96)`);
+  g.addColorStop(.68, `rgba(${tint.mid},.96)`);
+  g.addColorStop(1,   `rgba(${tint.low},.96)`);
+  ctx.fillStyle = g;
+  ctx.fill();
+
+  // eight facets meeting at the centre, alternating light and shade
+  ctx.save();
+  outline(); ctx.clip();
+  for (let i = 0; i < 4; i++){
+    const tip = tips[i], inner = pts[i * 2 + 1];
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(tip[0], tip[1]); ctx.lineTo(inner[0], inner[1]); ctx.closePath();
+    ctx.fillStyle = `rgba(255,255,255,${i === 0 || i === 3 ? .4 : .1})`;
+    ctx.fill();
+    const nextTip = tips[(i + 1) % 4];
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(inner[0], inner[1]); ctx.lineTo(nextTip[0], nextTip[1]); ctx.closePath();
+    ctx.fillStyle = `rgba(${tint.low},${i === 1 || i === 2 ? .28 : .07})`;
+    ctx.fill();
+  }
+  ctx.strokeStyle = "rgba(255,255,255,.5)";
+  ctx.lineWidth = 1;
+  for (const tp of tips){ ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(tp[0], tp[1]); ctx.stroke(); }
+  ctx.beginPath();
+  ctx.ellipse(-r * .2, -r * .55, r * .14, r * .34, .3, 0, 7);
+  ctx.fillStyle = "rgba(255,255,255,.7)";
+  ctx.fill();
+  ctx.restore();
+
+  // crisp outer edge
+  outline();
+  ctx.strokeStyle = `rgba(${tint.rim},.95)`;
+  ctx.lineWidth = Math.max(1, r * .08);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawJar(){
+  const x = jar.x + (jar.shake > 0 ? Math.sin(jar.shake * 70) * 5 : 0);
+  const w = jar.w, h = jar.h, top = H - 30 - h;
+  const prog = Math.min(earned / 60, 1);
+  const g = ctx.createRadialGradient(x, top + h * .6, 5, x, top + h * .6, w * 1.7);
+  g.addColorStop(0, `rgba(140,225,255,${.14 + prog * .55})`);
+  g.addColorStop(1, "rgba(140,225,255,0)");
+  ctx.fillStyle = g; ctx.fillRect(x - w * 2, top - w, w * 4, h + w * 2);
+  roundRect(x - w / 2, top + 8, w, h - 8, 18);
+  ctx.fillStyle = "rgba(200,230,255,.1)"; ctx.fill();
+  ctx.save(); ctx.clip();
+  const lit = Math.round(prog * jarLights.length);
+  for (let i = 0; i < lit; i++){
+    const L = jarLights[i];
+    glowDot(x + L.lx * w * .36 + Math.sin(t * 2 + L.p) * 2,
+            top + h - 12 - L.ly * (h - 34) + Math.cos(t * 1.7 + L.p) * 2,
+            1.8, "170,235,255", .7 + .3 * Math.sin(t * 3 + L.p));
+  }
+  ctx.restore();
+  roundRect(x - w / 2, top + 8, w, h - 8, 18);
+  ctx.lineWidth = 2.5; ctx.strokeStyle = "rgba(230,245,255,.6)"; ctx.stroke();
+  ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(x - w / 2 + 11, top + 34); ctx.lineTo(x - w / 2 + 11, top + h - 20); ctx.stroke();
+  roundRect(x - w / 2 - 5, top, w + 10, 11, 5);
+  ctx.fillStyle = "rgba(230,245,255,.45)"; ctx.fill();
+  ctx.fillStyle = "#9fb6ff";
+  ctx.fillRect(x - w / 2, top + 17, w, 7);
+  ctx.beginPath(); ctx.moveTo(x + w / 2 - 14, top + 20); ctx.lineTo(x + w / 2 + 2, top + 10); ctx.lineTo(x + w / 2 + 2, top + 30); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x + w / 2 - 14, top + 20); ctx.lineTo(x + w / 2 - 4, top + 40); ctx.lineTo(x + w / 2 + 6, top + 36); ctx.fill();
+}
+
+function drawScene(){
+  // night sky of the grove
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, "#04081c");
+  sky.addColorStop(.42, "#0a1640");
+  sky.addColorStop(.72, "#123073");
+  sky.addColorStop(1, "#1b4a9c");
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+
+  for (const s of stars){
+    ctx.fillStyle = `rgba(220,240,255,${.2 + .25 * Math.sin(t * 1.3 + s.p)})`;
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill();
+  }
+
+  // pale trunks at the edges
+  for (const tr of trees){
+    ctx.fillStyle = "rgba(96,120,175,.3)";
+    ctx.beginPath();
+    ctx.moveTo(tr.x - tr.w / 2, H);
+    ctx.quadraticCurveTo(tr.x - tr.w / 2 + tr.lean * tr.h, H - tr.h * .6, tr.x - tr.w * .3, H - tr.h);
+    ctx.lineTo(tr.x + tr.w * .3, H - tr.h);
+    ctx.quadraticCurveTo(tr.x + tr.w / 2 + tr.lean * tr.h, H - tr.h * .6, tr.x + tr.w / 2, H);
+    ctx.closePath(); ctx.fill();
+  }
+
+  // distant haze where the great orb rests
+  const orb = ctx.createRadialGradient(W * .56, H * .5, 4, W * .56, H * .5, Math.max(W, H) * .42);
+  orb.addColorStop(0, "rgba(150,215,255,.2)");
+  orb.addColorStop(.45, "rgba(96,150,240,.09)");
+  orb.addColorStop(1, "rgba(96,150,240,0)");
+  ctx.fillStyle = orb; ctx.fillRect(0, 0, W, H);
+
+  // hanging wisteria
+  for (const v of vines){
+    const sway = Math.sin(t * .5 + v.p) * v.sway * 6;
+    ctx.strokeStyle = "rgba(120,160,235,.45)";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(v.x, -4);
+    ctx.quadraticCurveTo(v.x + sway * .4, v.len * .55, v.x + sway, v.len);
+    ctx.stroke();
+    for (const b of v.bells){
+      const f = b.y / v.len;
+      const bx = v.x + sway * f + b.side * 3.5, by = b.y;
+      softGlow(bx, by, b.r * 3, "170,196,255", .5);
+      ctx.fillStyle = "rgba(158,186,252,.85)";
+      ctx.beginPath();
+      ctx.moveTo(bx, by - b.r);
+      ctx.quadraticCurveTo(bx + b.r, by, bx, by + b.r * 1.5);
+      ctx.quadraticCurveTo(bx - b.r, by, bx, by - b.r);
+      ctx.fill();
+    }
+  }
+
+  // drifting mist
+  for (const m of mistBands){
+    const x = ((t * m.speed + m.off) % (W + 300)) - 150;
+    const g = ctx.createLinearGradient(0, m.y - m.h, 0, m.y + m.h);
+    g.addColorStop(0, "rgba(170,215,255,0)");
+    g.addColorStop(.5, `rgba(170,215,255,${m.a})`);
+    g.addColorStop(1, "rgba(170,215,255,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.ellipse(x, m.y, W * .55, m.h, 0, 0, 7);
+    ctx.fill();
+  }
+
+  // glow rising off the flower field
+  const ground = ctx.createLinearGradient(0, H * .74, 0, H);
+  ground.addColorStop(0, "rgba(90,180,255,0)");
+  ground.addColorStop(1, "rgba(110,200,255,.3)");
+  ctx.fillStyle = ground; ctx.fillRect(0, H * .74, W, H * .26);
+}
+
+function drawFlowers(){
+  for (const f of flowers){
+    const sway = Math.sin(t * .9 + f.p) * 2.4;
+    const tipX = f.x + f.lean + sway, tipY = f.base - f.stem;
+    ctx.strokeStyle = `rgba(70,130,210,${f.a * .7})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(f.x, f.base);
+    ctx.quadraticCurveTo(f.x + f.lean * .3, f.base - f.stem * .6, tipX, tipY);
+    ctx.stroke();
+    const pulse = .72 + .28 * Math.sin(t * 1.6 + f.p);
+    softGlow(tipX, tipY, f.r * 4.2, "130,215,255", f.a * pulse);
+    ctx.fillStyle = `rgba(120,215,255,${f.a})`;
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++){
+      const a = -Math.PI / 2 + (i / 5) * Math.PI * 2;
+      ctx.ellipse(tipX + Math.cos(a) * f.r * .55, tipY + Math.sin(a) * f.r * .55, f.r * .6, f.r * .45, a, 0, 7);
+    }
+    ctx.fill();
+    ctx.fillStyle = `rgba(240,253,255,${f.a * pulse})`;
+    ctx.beginPath(); ctx.arc(tipX, tipY, f.r * .42, 0, 7); ctx.fill();
+  }
+}
+
+function draw(){
+  // While the reveal or card overlay covers the screen, the grove is almost
+  // entirely hidden behind it. Drawing it anyway starved the main thread and
+  // made the CSS lantern animations lag behind their timers, so skip it.
+  if (state === "reveal" || state === "card"){
+    ctx.clearRect(0, 0, W, H);
+    for (const p of particles){
+      const a = Math.max(0, p.life / p.max);
+      if (p.glow) glowDot(p.x, p.y, p.r, p.col, Math.min(1, a));
+      else { ctx.fillStyle = `rgba(${p.col},${a})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); }
+    }
+    return;
+  }
+  drawScene();
+  if (state !== "catch")
+    for (const a of ambient) glowDot(a.x, a.y, 2, "200,240,255", .5 + .45 * Math.sin(t * 2.5 + a.p));
+  for (const it of items){
+    if (it.kind === "fly"){
+      drawGem(it.x, it.y, it.golden ? 17 : 13, it.spin + t * it.spinV, it.golden);
+    } else {
+      ctx.fillStyle = "rgba(38,22,74,.92)";
+      ctx.strokeStyle = "rgba(150,120,220,.7)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(it.x, it.y - 13);
+      ctx.quadraticCurveTo(it.x + 8, it.y, it.x, it.y + 6);
+      ctx.quadraticCurveTo(it.x - 8, it.y, it.x, it.y - 13);
+      ctx.fill(); ctx.stroke();
+    }
+  }
+  drawFlowers();
+  if (state === "catch") drawJar();
+  for (const p of particles){
+    const a = Math.max(0, p.life / p.max);
+    if (p.glow) glowDot(p.x, p.y, p.r, p.col, Math.min(1, a));
+    else { ctx.fillStyle = `rgba(${p.col},${a})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); }
+  }
+}
+
+let last = performance.now();
+function loop(now){
+  const dt = Math.min((now - last) / 1000, .05);
+  last = now;
+  // the ambient drift and scenery don't need updating behind an overlay either
+  if (state === "reveal" || state === "card"){
+    t += dt;
+    for (let i = particles.length - 1; i >= 0; i--){
+      const p = particles[i];
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.glow){ p.vx *= .98; p.vy = p.vy * .98 - 4 * dt; } else p.vy += 160 * dt;
+      p.life -= dt;
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+  } else {
+    update(dt);
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+resize();
+updateTop();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
